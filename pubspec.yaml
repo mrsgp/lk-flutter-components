@@ -19,6 +19,8 @@ dependencies:
   livekit_client: ^2.3.0
   provider: ^6.1.2
   responsive_builder: ^0.7.1
+  collection: ^1.18.0
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:
