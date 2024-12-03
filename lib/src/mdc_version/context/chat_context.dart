@@ -67,7 +67,7 @@ mixin ChatContextMixin on ChangeNotifier {
   List<ChatMessage> get messages => _messages;
   LocalParticipant? _localParticipant;
   EventsListener<RoomEvent>? _listener;
-
+  bool showNewMessageIndicator = false;
   void chatContextSetup(
       EventsListener<RoomEvent>? listener, LocalParticipant? localParticipant) {
     _listener = listener;
@@ -77,6 +77,9 @@ mixin ChatContextMixin on ChangeNotifier {
         Debug.event('ChatContext: DataReceivedEvent');
 
         if (event.topic == 'lk-chat-topic') {
+          if (!showNewMessageIndicator && !_chatEnabled) {
+            showNewMessageIndicator = true;
+          }
           addMessageFromMap(
               const Utf8Decoder().convert(event.data), event.participant);
         }
@@ -115,6 +118,7 @@ mixin ChatContextMixin on ChangeNotifier {
 
   void toggleChat(bool enabled) {
     _chatEnabled = enabled;
+    showNewMessageIndicator = false;
     notifyListeners();
   }
 }

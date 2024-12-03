@@ -22,15 +22,15 @@ class ChatToggle extends StatelessWidget {
   const ChatToggle({super.key, required this.builder});
 
   final Widget Function(
-      BuildContext context, RoomContext roomCtx, bool isChatEnabled) builder;
+      BuildContext context, RoomContext roomCtx, bool isChatEnabled, bool showNewMessageIndicator) builder;
 
   @override
   Widget build(BuildContext context) {
     return Consumer<RoomContext>(builder: (context, roomCtx, child) {
-      return Selector<RoomContext, bool>(
-        selector: (context, isChatEnabled) => roomCtx.isChatEnabled,
-        builder: (context, isChatEnabled, child) =>
-            builder(context, roomCtx, isChatEnabled),
+      return Selector<RoomContext, ({bool isChatEnabled, bool showNewMessageIndicator})>(
+        selector: (context, data) => (isChatEnabled: roomCtx.isChatEnabled, showNewMessageIndicator: roomCtx.showNewMessageIndicator),
+        builder: (context, data, child) =>
+            builder(context, roomCtx, data.isChatEnabled, data.showNewMessageIndicator),
       );
     });
   }

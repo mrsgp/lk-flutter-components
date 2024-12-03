@@ -16,19 +16,19 @@ import 'package:flutter/material.dart';
 
 import 'package:livekit_client/livekit_client.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-
 import '../theme.dart';
 
 class ChatToggleWidget extends StatelessWidget {
-  ChatToggleWidget({
-    required this.isChatOpen,
-    required this.toggleChat,
-    this.showLabel = true,
-  });
+  ChatToggleWidget(
+      {required this.isChatOpen,
+      required this.toggleChat,
+      this.showLabel = true,
+      this.showNewMessageIndicator = false});
 
   final bool isChatOpen;
   final Function(bool enabled) toggleChat;
   final bool showLabel;
+  final bool showNewMessageIndicator;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,21 @@ class ChatToggleWidget extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.chat_outlined),
+          Stack(
+            children: [
+              Icon(Icons.chat),
+              showNewMessageIndicator
+                  ? Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                      child: Container(),
+                    )
+                  : Container(),
+            ],
+          ),
           const SizedBox(width: 2),
           if (deviceScreenType != DeviceScreenType.mobile || showLabel)
             const Text(
