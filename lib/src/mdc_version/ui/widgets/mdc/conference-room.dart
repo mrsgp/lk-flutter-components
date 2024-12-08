@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:livekit_components/mdc_lk_components.dart';
@@ -7,13 +8,14 @@ import 'package:responsive_builder/responsive_builder.dart';
 
 class ConferenceRoom extends StatefulWidget {
   final bool isChatView;
-  final String providerName;
+  final String remoteParticipantName;
   final Function(bool) onDisconnectCallback;
-  final Future<bool> Function(String) onMessageSendCallback;
-  //final Future<String> Function()? onFileReadCallback;
-  const ConferenceRoom(this.isChatView, this.providerName,
-      this.onDisconnectCallback, this.onMessageSendCallback,
-       //this.onFileReadCallback,
+  final Future<bool> Function(String, bool) onMessageSendCallback;
+    final Future<bool> Function(String) onFileDownload;
+  final Future<String> Function(XFile) onFileUpload;
+  const ConferenceRoom(this.isChatView, this.remoteParticipantName,
+      this.onDisconnectCallback, this.onMessageSendCallback, this.onFileUpload,
+      this.onFileDownload,
       {super.key});
 
   @override
@@ -27,17 +29,26 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
     return Consumer<RoomContext>(
       builder: (context, roomCtx, child) {
         return deviceScreenType == DeviceScreenType.desktop
-            ? _displayVideoLayoutForDesktopDevice(roomCtx, widget.providerName)
+            ? _displayVideoLayoutForDesktopDevice(roomCtx, widget.remoteParticipantName)
             : roomCtx.isChatEnabled
                 ? ChatBuilder(
                     builder: (context, enabled, chatCtx, messages) {
                       return ChatWidget(
+                        onFileDownload: widget.onFileDownload,
+                        onFileUpload:widget.onFileUpload,
+                        onRemove: (msg) {
+                          chatCtx.removeMessage(msg);
+                        },
                         messages: messages,
-                        onSend: (message) async {
-                          final result =
-                              await widget.onMessageSendCallback.call(message);
-                          if (result) {
-                            chatCtx.sendMessage(message);
+                        onSend: (message, hasFileId, msgId) async {
+                          if (message is String) {
+                            final result = await widget.onMessageSendCallback
+                                .call(message, hasFileId);
+                            if (result) {
+                              chatCtx.sendMessage(message, hasFileId, msgId);
+                            }
+                          } else if (message is XFile) {
+                            chatCtx.sendMessage(message, false, '');
                           }
                         },
                         onClose: () {
@@ -47,19 +58,19 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
                     },
                   )
                 : _displayVideoLayoutForHandheldDevice(
-                    roomCtx, widget.providerName);
+                    roomCtx, widget.remoteParticipantName);
       },
     );
   }
 
   Widget _displayVideoLayoutForHandheldDevice(
-      RoomContext roomCtx, String providerName) {
+      RoomContext roomCtx, String remoteParticipantName) {
     return ParticipantLoop(
       showAudioTracks: false,
       showVideoTracks: true,
 
       /// layout builder
-      layoutBuilder: ConferenceRoomLayoutBuilder(roomCtx, providerName),
+      layoutBuilder: ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
 
       /// participant builder
       participantBuilder: (context) {
@@ -102,13 +113,13 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
   }
 
   Widget _displayVideoLayoutForDesktopDevice(
-      RoomContext roomCtx, String providerName) {
+      RoomContext roomCtx, String remoteParticipantName) {
     return ParticipantLoop(
       showAudioTracks: false,
       showVideoTracks: true,
 
       /// layout builder
-      layoutBuilder: ConferenceRoomLayoutBuilder(roomCtx, providerName),
+      layoutBuilder: ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
 
       /// participant builder
       participantBuilder: (context) {
@@ -159,8 +170,8 @@ class ConferenceRoomLayoutBuilder implements ParticipantLayoutBuilder {
   double _xPosition = 0;
   double _yPosition = 0;
   final RoomContext roomContext;
-  final String providerName;
-  ConferenceRoomLayoutBuilder(this.roomContext, this.providerName);
+  final String remoteParticipantName;
+  ConferenceRoomLayoutBuilder(this.roomContext, this.remoteParticipantName);
 
   Widget _connectingWidget() {
     return Column(
@@ -174,7 +185,7 @@ class ConferenceRoomLayoutBuilder implements ParticipantLayoutBuilder {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            providerName,
+            remoteParticipantName,
             style: const TextStyle(color: Colors.white),
           ),
         ),

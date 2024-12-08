@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // Copyright 2024 LiveKit, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,33 +16,38 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-
 import 'package:livekit_client/livekit_client.dart';
 
 import '../debug/logger.dart';
 
 // topic: lk-chat-topic
 class ChatMessage {
-  final String message;
+  final dynamic message; //String | XFile
   final int timestamp;
   final String id;
   final bool sender;
+  final bool hasFileId;
+  final bool alreadyDownloaded;
+  final bool alreadyUploaded;
 
   final Participant? participant;
 
-  ChatMessage({
-    required this.message,
-    required this.timestamp,
-    required this.id,
-    this.participant,
-    required this.sender,
-  });
+  ChatMessage(
+      {required this.message,
+      required this.timestamp,
+      required this.hasFileId,
+      required this.id,
+      required this.participant,
+      required this.sender,
+      required this.alreadyDownloaded,
+      required this.alreadyUploaded});
 
   Map<String, dynamic> toMap() {
     return {
-      'message': message,
+      'message': message as String,
       'timestamp': timestamp,
       'id': id,
+      'hasFileId': hasFileId
     };
   }
 
@@ -53,11 +59,37 @@ class ChatMessage {
   factory ChatMessage.fromMap(
       Map<String, dynamic> map, Participant? participant) {
     return ChatMessage(
-      message: map['message'],
-      timestamp: map['timestamp'],
-      id: map['id'],
-      participant: participant,
-      sender: false,
+        message: map['message'],
+        timestamp: map['timestamp'],
+        id: map['id'],
+        hasFileId: map['hasFileId'],
+        participant: participant,
+        sender: false,
+        alreadyDownloaded: false,
+        alreadyUploaded: true);
+  }
+  
+
+  ChatMessage copyWith({
+    dynamic message,
+    int? timestamp,
+    String? id,
+    bool? sender,
+    bool? hasFileId,
+    bool? alreadyDownloaded,
+    bool? alreadyUploaded,
+    Participant? participant,
+  }) {
+    return ChatMessage(
+      message: message ?? this.message,
+      timestamp: timestamp ?? this.timestamp,
+      hasFileId:  hasFileId ?? this.hasFileId,
+      id: id ?? this.id,
+      participant: participant ?? this.participant,
+      sender: sender ?? this.sender,
+      alreadyDownloaded: alreadyDownloaded ?? this.alreadyDownloaded,
+     alreadyUploaded: alreadyUploaded ?? this.alreadyUploaded
+   
     );
   }
 }
@@ -90,21 +122,36 @@ mixin ChatContextMixin on ChangeNotifier {
     }
   }
 
-  void sendMessage(String message) {
+  void sendMessage(dynamic message, bool hasFileId, String fileMessageId) {
     final msg = ChatMessage(
-      message: message,
-      timestamp: DateTime.now().millisecondsSinceEpoch,
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      sender: true,
-      participant: _localParticipant,
-    );
-    addMessage(msg);
-    _localParticipant?.publishData(const Utf8Encoder().convert(msg.toJson()),
-        topic: 'lk-chat-topic');
+        message: message,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        sender: true,
+        hasFileId: hasFileId,
+        participant: _localParticipant,
+        alreadyDownloaded: false,
+        alreadyUploaded: hasFileId);
+    if (!hasFileId) {
+      addMessage(msg);
+    } else if (fileMessageId.isNotEmpty) {
+      int fileMsgIndex = _messages.indexWhere((m) => m.id == fileMessageId);
+          _messages[fileMsgIndex] = _messages[fileMsgIndex].copyWith(alreadyUploaded: true);
+    }
+
+    if (message is String) {
+      _localParticipant?.publishData(const Utf8Encoder().convert(msg.toJson()),
+          topic: 'lk-chat-topic');
+    }
   }
 
   void addMessage(ChatMessage message) {
     _messages.add(message);
+    notifyListeners();
+  }
+
+  void removeMessage(ChatMessage message) {
+    _messages.remove(message);
     notifyListeners();
   }
 

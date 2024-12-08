@@ -12,25 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:collection/collection.dart';
+import 'package:cross_file/cross_file.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chat_bubbles/chat_bubbles.dart';
 
 import '../../../context/chat_context.dart';
+import '../mdc/file-message.dart';
+import '../mdc/file-received-message.dart';
 import '../theme.dart';
 import 'data_chip.dart';
 
 class ChatWidget extends StatelessWidget {
-  ChatWidget({
-    super.key,
-    required this.messages,
-    required this.onSend,
-    required this.onClose,
-  });
-
+  ChatWidget(
+      {super.key,
+      required this.messages,
+      required this.onSend,
+      required this.onClose,
+      required this.onRemove,
+      required this.onFileUpload,
+      required this.onFileDownload
+      });
+final Future<bool> Function(String) onFileDownload;
+  final Future<String> Function(XFile) onFileUpload;
   final List<ChatMessage> messages;
-  final Function(String) onSend;
+  final Function(dynamic, bool, String) onSend;
   final Function() onClose;
+  final Function(ChatMessage) onRemove;
   final ScrollController _scrollController = ScrollController();
 
   List<Widget> _buildMessages(List<ChatMessage> messages) {
@@ -38,22 +48,44 @@ class ChatWidget extends StatelessWidget {
     int lastTimestamp = 0;
     String lastPartcipantId = '';
     for (ChatMessage msg in messages) {
-      if (DateTime.fromMillisecondsSinceEpoch(msg.timestamp)
-                  .difference(
-                      DateTime.fromMillisecondsSinceEpoch(lastTimestamp))
-                  .inMinutes >
-              1 ||
-          lastPartcipantId != msg.participant?.identity) {
-        msgWidgets.add(CustomDateNameChip(
-            name: msg.participant?.name ?? 'Unknown',
-            date: DateTime.fromMillisecondsSinceEpoch(msg.timestamp)));
+      if (msg.message is String) {
+        if (DateTime.fromMillisecondsSinceEpoch(msg.timestamp)
+                    .difference(
+                        DateTime.fromMillisecondsSinceEpoch(lastTimestamp))
+                    .inMinutes >
+                1 ||
+            lastPartcipantId != msg.participant?.identity) {
+          msgWidgets.add(CustomDateNameChip(
+              name: msg.participant?.name ?? 'Unknown',
+              date: DateTime.fromMillisecondsSinceEpoch(msg.timestamp)));
+        }
+        if (msg.hasFileId) {
+          msgWidgets.add(FileReceivedMessageView(
+            fileId: msg.message as String,
+            date: DateTime.fromMillisecondsSinceEpoch(msg.timestamp),            
+            onDownloadFile: onFileDownload));
+        } else {
+          msgWidgets.add(BubbleNormal(
+            text: msg.message as String,
+            color: const Color(0xFFE8E8EE),
+            tail: false,
+            isSender: msg.sender,
+          ));
+        }
+      } else if (msg.message is XFile) {
+        msgWidgets.add(FileTransferMessageView(    
+          chatMessage: msg,      
+            onCancelUploadCallback: (msgId) {
+              var msgToCancel = messages.firstWhereOrNull((m) => m.id == msgId);
+              if (msgToCancel != null) {
+                onRemove.call(msgToCancel);
+              }
+            },
+            onUploadCompleted: (fileName, msgId) {
+              onSend(fileName, true, msgId);
+            },
+            onUploadFile: onFileUpload));
       }
-      msgWidgets.add(BubbleNormal(
-        text: msg.message,
-        color: const Color(0xFFE8E8EE),
-        tail: false,
-        isSender: msg.sender,
-      ));
 
       lastTimestamp = msg.timestamp;
       lastPartcipantId = msg.participant?.identity ?? '';
@@ -92,7 +124,10 @@ class ChatWidget extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: onClose,
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                  ),
                 )
               ],
             ),
@@ -109,15 +144,16 @@ class ChatWidget extends StatelessWidget {
             color: LKColors.lkDarkBlue,
             padding: const EdgeInsets.symmetric(horizontal: 5.0),
             child: MessageBar(
+              actions: [_filePicker()],
               messageBarColor: LKColors.lkDarkBlue,
               replyWidgetColor: LKColors.lkDarkBlue,
               onSend: (msg) {
-                onSend(msg);
+                onSend(msg, false, '');
                 scrollToBottom();
               },
               onTextChanged: (msg) {
                 if (msg.isNotEmpty && msg.codeUnits.last == 10) {
-                  onSend(msg.substring(0, msg.length - 1));
+                  onSend(msg.substring(0, msg.length - 1), false, '');
                   scrollToBottom();
                 }
               },
@@ -126,5 +162,26 @@ class ChatWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _filePicker() {
+    return IconButton(
+        onPressed: () async {
+          FilePickerResult? result = await FilePicker.platform.pickFiles(
+              type: FileType.custom,
+              allowedExtensions: ['jpg', 'pdf', 'png'],
+              allowMultiple: true);
+
+          if (result != null) {
+            List<XFile> xFiles = result.xFiles;
+            xFiles.forEach((f) {
+              onSend(f, false, '');             
+            });
+          } 
+        },
+        icon: const Icon(
+          Icons.attach_file,
+          color: Colors.blue,
+        ));
   }
 }

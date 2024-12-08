@@ -21,6 +21,8 @@ dependencies:
   responsive_builder: ^0.7.1
   collection: ^1.18.0
   equatable: ^2.0.5
+  file_picker: ^8.1.4
+  cross_file: ^0.3.4+2
 
 dev_dependencies:
   flutter_test:
