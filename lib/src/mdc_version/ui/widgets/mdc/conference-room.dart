@@ -11,10 +11,14 @@ class ConferenceRoom extends StatefulWidget {
   final String remoteParticipantName;
   final Function(bool) onDisconnectCallback;
   final Future<bool> Function(String, bool) onMessageSendCallback;
-    final Future<bool> Function(String) onFileDownload;
+  final Future<bool> Function(String) onFileDownload;
   final Future<String> Function(XFile) onFileUpload;
-  const ConferenceRoom(this.isChatView, this.remoteParticipantName,
-      this.onDisconnectCallback, this.onMessageSendCallback, this.onFileUpload,
+  const ConferenceRoom(
+      this.isChatView,
+      this.remoteParticipantName,
+      this.onDisconnectCallback,
+      this.onMessageSendCallback,
+      this.onFileUpload,
       this.onFileDownload,
       {super.key});
 
@@ -24,18 +28,25 @@ class ConferenceRoom extends StatefulWidget {
 
 class _ConferenceRoomState extends State<ConferenceRoom> {
   @override
+  void initState() {
+    super.initState();
+   
+  }
+
+  @override
   Widget build(BuildContext context) {
     var deviceScreenType = getDeviceType(MediaQuery.of(context).size);
     return Consumer<RoomContext>(
       builder: (context, roomCtx, child) {
         return deviceScreenType == DeviceScreenType.desktop
-            ? _displayVideoLayoutForDesktopDevice(roomCtx, widget.remoteParticipantName)
+            ? _displayVideoLayoutForDesktopDevice(
+                roomCtx, widget.remoteParticipantName)
             : roomCtx.isChatEnabled
                 ? ChatBuilder(
                     builder: (context, enabled, chatCtx, messages) {
                       return ChatWidget(
                         onFileDownload: widget.onFileDownload,
-                        onFileUpload:widget.onFileUpload,
+                        onFileUpload: widget.onFileUpload,
                         onRemove: (msg) {
                           chatCtx.removeMessage(msg);
                         },
@@ -70,7 +81,8 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
       showVideoTracks: true,
 
       /// layout builder
-      layoutBuilder: ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
+      layoutBuilder:
+          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
 
       /// participant builder
       participantBuilder: (context) {
@@ -119,7 +131,8 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
       showVideoTracks: true,
 
       /// layout builder
-      layoutBuilder: ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
+      layoutBuilder:
+          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
 
       /// participant builder
       participantBuilder: (context) {

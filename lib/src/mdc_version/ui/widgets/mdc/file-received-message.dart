@@ -43,7 +43,7 @@ class _FileReceivedMessageViewState extends State<FileReceivedMessageView> {
           child: Row(children: <Widget>[
             Expanded(
               child: ListTile(
-                leading: Icon(Icons.attachment),
+                leading: Icon(Icons.file_copy),
                 title: Text('$fileName $downloadState'),
                 onTap: () {},
               ),

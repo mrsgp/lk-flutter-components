@@ -69,3 +69,4 @@ export 'src/mdc_version/ui/widgets/mdc/conference-room.dart';
 export 'src/mdc_version/ui/widgets/mdc/pre-join-appointment.dart';
 export 'src/mdc_version/ui/widgets/mdc/is-local-indicator.dart';
 export 'src/mdc_version/types/rtcoptions.dart';
+export 'src/mdc_version/types/saved-chat-message.dart';

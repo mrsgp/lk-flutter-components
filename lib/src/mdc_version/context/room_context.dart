@@ -14,12 +14,14 @@
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart' hide ConnectionState;
 
 import 'package:livekit_client/livekit_client.dart';
 import 'package:provider/provider.dart';
 
 import '../debug/logger.dart';
+import '../types/saved-chat-message.dart';
 import 'chat_context.dart';
 
 class RoomContext extends ChangeNotifier with ChatContextMixin {
@@ -147,10 +149,9 @@ class RoomContext extends ChangeNotifier with ChatContextMixin {
   }) async {
     if (cameraOpened || microphoneOpened) {
       _fastConnectOptions = FastConnectOptions(
-          microphone: TrackOption(track: localAudioTrack),
-          camera: TrackOption(track: localVideoTrack),
-          );
-     
+        microphone: TrackOption(track: localAudioTrack),
+        camera: TrackOption(track: localVideoTrack),
+      );
 
       await resetLocalTracks();
     }
@@ -231,7 +232,8 @@ class RoomContext extends ChangeNotifier with ChatContextMixin {
   bool get connected => _connected;
 
   LocalParticipant? get localParticipant => _room.localParticipant;
-
+  Participant? get remoteParticipant =>
+      participants.firstWhereOrNull((p) => p is! LocalParticipant);
   int get participantCount => _participants.length;
 
   final List<Participant> _participants = [];
@@ -306,6 +308,27 @@ class RoomContext extends ChangeNotifier with ChatContextMixin {
     _localAudioTrack = null;
     _localVideoTrack = null;
     notifyListeners();
+  }
+
+  void loadSavedMessages(
+      List<SavedChatMessage>? savedMessages, bool isRequestFromPatientApp) {
+    if (savedMessages != null && savedMessages.isNotEmpty) {
+      for (int i = 0; i < savedMessages.length; i++) {
+        SavedChatMessage sMsg = savedMessages[i];
+        bool isSender = (isRequestFromPatientApp && sMsg.isFromPatient) ||
+            (!isRequestFromPatientApp && !sMsg.isFromPatient);
+        addMessage(ChatMessage(
+            message: sMsg.content,
+            timestamp: sMsg.noteDateTime.millisecondsSinceEpoch,
+            hasFileId: sMsg.contentType == 'File',
+            id: sMsg.noteDateTime.millisecondsSinceEpoch.toString(),
+            participant: isSender ? localParticipant : remoteParticipant,
+            sender: isSender,
+            alreadyDownloaded: true,
+            alreadyUploaded: true,
+            ));
+      }
+    }
   }
 
   @override

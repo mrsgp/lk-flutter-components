@@ -17,6 +17,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:livekit_components/mdc_lk_components.dart';
 
 import '../debug/logger.dart';
 
@@ -40,7 +41,8 @@ class ChatMessage {
       required this.participant,
       required this.sender,
       required this.alreadyDownloaded,
-      required this.alreadyUploaded});
+      required this.alreadyUploaded,
+      });
 
   Map<String, dynamic> toMap() {
     return {
@@ -66,9 +68,9 @@ class ChatMessage {
         participant: participant,
         sender: false,
         alreadyDownloaded: false,
-        alreadyUploaded: true);
+        alreadyUploaded: true,
+        );
   }
-  
 
   ChatMessage copyWith({
     dynamic message,
@@ -81,16 +83,15 @@ class ChatMessage {
     Participant? participant,
   }) {
     return ChatMessage(
-      message: message ?? this.message,
-      timestamp: timestamp ?? this.timestamp,
-      hasFileId:  hasFileId ?? this.hasFileId,
-      id: id ?? this.id,
-      participant: participant ?? this.participant,
-      sender: sender ?? this.sender,
-      alreadyDownloaded: alreadyDownloaded ?? this.alreadyDownloaded,
-     alreadyUploaded: alreadyUploaded ?? this.alreadyUploaded
-   
-    );
+        message: message ?? this.message,
+        timestamp: timestamp ?? this.timestamp,
+        hasFileId: hasFileId ?? this.hasFileId,
+        id: id ?? this.id,
+        participant: participant ?? this.participant,
+        sender: sender ?? this.sender,
+        alreadyDownloaded: alreadyDownloaded ?? this.alreadyDownloaded,
+        alreadyUploaded: alreadyUploaded ?? this.alreadyUploaded,
+       );
   }
 }
 
@@ -131,12 +132,13 @@ mixin ChatContextMixin on ChangeNotifier {
         hasFileId: hasFileId,
         participant: _localParticipant,
         alreadyDownloaded: false,
-        alreadyUploaded: hasFileId);
+        alreadyUploaded: hasFileId,);
     if (!hasFileId) {
       addMessage(msg);
     } else if (fileMessageId.isNotEmpty) {
       int fileMsgIndex = _messages.indexWhere((m) => m.id == fileMessageId);
-          _messages[fileMsgIndex] = _messages[fileMsgIndex].copyWith(alreadyUploaded: true);
+      _messages[fileMsgIndex] =
+          _messages[fileMsgIndex].copyWith(alreadyUploaded: true);
     }
 
     if (message is String) {

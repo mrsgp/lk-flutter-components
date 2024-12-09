@@ -33,9 +33,8 @@ class ChatWidget extends StatelessWidget {
       required this.onClose,
       required this.onRemove,
       required this.onFileUpload,
-      required this.onFileDownload
-      });
-final Future<bool> Function(String) onFileDownload;
+      required this.onFileDownload});
+  final Future<bool> Function(String) onFileDownload;
   final Future<String> Function(XFile) onFileUpload;
   final List<ChatMessage> messages;
   final Function(dynamic, bool, String) onSend;
@@ -56,14 +55,18 @@ final Future<bool> Function(String) onFileDownload;
                 1 ||
             lastPartcipantId != msg.participant?.identity) {
           msgWidgets.add(CustomDateNameChip(
-              name: msg.participant?.name ?? 'Unknown',
+              name: msg.participant?.name ?? '',
               date: DateTime.fromMillisecondsSinceEpoch(msg.timestamp)));
         }
-        if (msg.hasFileId) {
+        if (msg.hasFileId && !msg.sender) {
           msgWidgets.add(FileReceivedMessageView(
-            fileId: msg.message as String,
-            date: DateTime.fromMillisecondsSinceEpoch(msg.timestamp),            
-            onDownloadFile: onFileDownload));
+              fileId: msg.message as String,
+              date: DateTime.fromMillisecondsSinceEpoch(msg.timestamp),
+              onDownloadFile: onFileDownload));
+        } else if (msg.hasFileId && msg.sender) {
+          msgWidgets.add(FileTransferSavedMessageView(
+              chatMessage: msg,
+             ));
         } else {
           msgWidgets.add(BubbleNormal(
             text: msg.message as String,
@@ -73,8 +76,8 @@ final Future<bool> Function(String) onFileDownload;
           ));
         }
       } else if (msg.message is XFile) {
-        msgWidgets.add(FileTransferMessageView(    
-          chatMessage: msg,      
+        msgWidgets.add(FileTransferMessageView(
+            chatMessage: msg,
             onCancelUploadCallback: (msgId) {
               var msgToCancel = messages.firstWhereOrNull((m) => m.id == msgId);
               if (msgToCancel != null) {
@@ -175,9 +178,9 @@ final Future<bool> Function(String) onFileDownload;
           if (result != null) {
             List<XFile> xFiles = result.xFiles;
             xFiles.forEach((f) {
-              onSend(f, false, '');             
+              onSend(f, false, '');
             });
-          } 
+          }
         },
         icon: const Icon(
           Icons.attach_file,

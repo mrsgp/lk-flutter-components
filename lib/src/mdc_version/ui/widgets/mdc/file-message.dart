@@ -71,7 +71,8 @@ class _FileTransferMessageViewState extends State<FileTransferMessageView> {
             ),
             if (uploadState == 'uploading')
               const Icon(Icons.loop)
-            else if (uploadState == 'completed' || widget.chatMessage.alreadyUploaded)
+            else if (uploadState == 'completed' ||
+                widget.chatMessage.alreadyUploaded)
               const Icon(
                 Icons.check,
                 color: Colors.green,
@@ -90,11 +91,9 @@ class _FileTransferMessageViewState extends State<FileTransferMessageView> {
                         uploadState = 'uploading';
                       });
                       var remoteFileName = await widget.onUploadFile(file);
-      
+
                       if (remoteFileName != '') {
-                        widget.onUploadCompleted.call(
-                          remoteFileName, msgId
-                        );
+                        widget.onUploadCompleted.call(remoteFileName, msgId);
                         setState(() {
                           uploadState = 'completed';
                         });
@@ -117,6 +116,40 @@ class _FileTransferMessageViewState extends State<FileTransferMessageView> {
                   )
                 ],
               )
+          ])),
+    );
+  }
+}
+
+class FileTransferSavedMessageView extends StatelessWidget {
+  final ChatMessage chatMessage;
+
+  const FileTransferSavedMessageView({
+    super.key,
+    required this.chatMessage,
+  });
+
+  String get _fileName  => (chatMessage.message as String).split('|')[1];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+          elevation: 0.0,
+          margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 1),
+          child: Row(children: <Widget>[
+            Expanded(
+              child: ListTile(
+                leading: Icon(Icons.attach_file),
+                title: Text(_fileName),
+                onTap: () {},
+              ),
+            ),
+            const Icon(
+              Icons.check,
+              color: Colors.green,
+            )
           ])),
     );
   }
