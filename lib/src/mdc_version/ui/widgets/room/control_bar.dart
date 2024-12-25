@@ -30,6 +30,7 @@ import 'media_device_select_button.dart';
 import 'screenshare_toggle.dart';
 
 class ControlBar extends StatelessWidget {
+  final Function() onDisconnect;
   const ControlBar({
     super.key,
     this.microphone = true,
@@ -40,6 +41,7 @@ class ControlBar extends StatelessWidget {
     this.leave = true,
     this.settings = true,
     this.showLabels = false,
+    required this.onDisconnect
   });
 
   final bool microphone;
@@ -140,7 +142,8 @@ class ControlBar extends StatelessWidget {
             ),
           if (chat)
             ChatToggle(
-              builder: (context, roomCtx, isChatEnabled, hasNewMessage) => ChatToggleWidget(
+              builder: (context, roomCtx, isChatEnabled, hasNewMessage) =>
+                  ChatToggleWidget(
                 isChatOpen: roomCtx.isChatEnabled,
                 toggleChat: (enabled) => roomCtx.toggleChat(enabled),
                 showLabel: showLabels,
@@ -153,6 +156,7 @@ class ControlBar extends StatelessWidget {
                 roomCtx: roomCtx,
                 connected: connected,
                 showLabel: showLabels,
+                onDisconnect: onDisconnect
               ),
             ),
         ],

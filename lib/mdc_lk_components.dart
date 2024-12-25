@@ -51,6 +51,7 @@ export 'src/mdc_version/ui/widgets/room/disconnect_button.dart';
 export 'src/mdc_version/ui/widgets/room/screenshare_toggle.dart';
 export 'src/mdc_version/ui/widgets/room/clear_pin_button.dart';
 export 'src/mdc_version/ui/widgets/room/join_button.dart';
+export 'src/mdc_version/ui/widgets/room/data_chip.dart';
 export 'src/mdc_version/ui/widgets/track/focus_toggle.dart';
 export 'src/mdc_version/ui/widgets/track/no_track_widget.dart';
 export 'src/mdc_version/ui/widgets/track/video_track_widget.dart';
@@ -70,3 +71,6 @@ export 'src/mdc_version/ui/widgets/mdc/pre-join-appointment.dart';
 export 'src/mdc_version/ui/widgets/mdc/is-local-indicator.dart';
 export 'src/mdc_version/types/rtcoptions.dart';
 export 'src/mdc_version/types/saved-chat-message.dart';
+
+export 'src/mdc_version/ui/widgets/mdc/file-message.dart';
+export 'src/mdc_version/ui/widgets/mdc/file-received-message.dart';

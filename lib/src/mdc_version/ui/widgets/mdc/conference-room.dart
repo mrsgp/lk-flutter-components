@@ -9,7 +9,7 @@ import 'package:responsive_builder/responsive_builder.dart';
 class ConferenceRoom extends StatefulWidget {
   final bool isChatView;
   final String remoteParticipantName;
-  final Function(bool) onDisconnectCallback;
+  final Function() onDisconnectCallback;
   final Future<bool> Function(String, bool) onMessageSendCallback;
   final Future<bool> Function(String) onFileDownload;
   final Future<String> Function(XFile) onFileUpload;
@@ -82,7 +82,7 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
 
       /// layout builder
       layoutBuilder:
-          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
+          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName, widget.onDisconnectCallback),
 
       /// participant builder
       participantBuilder: (context) {
@@ -132,7 +132,7 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
 
       /// layout builder
       layoutBuilder:
-          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName),
+          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName, widget.onDisconnectCallback),
 
       /// participant builder
       participantBuilder: (context) {
@@ -184,7 +184,8 @@ class ConferenceRoomLayoutBuilder implements ParticipantLayoutBuilder {
   double _yPosition = 0;
   final RoomContext roomContext;
   final String remoteParticipantName;
-  ConferenceRoomLayoutBuilder(this.roomContext, this.remoteParticipantName);
+  final Function() onDisconnectCallback;
+  ConferenceRoomLayoutBuilder(this.roomContext, this.remoteParticipantName, this.onDisconnectCallback);
 
   Widget _connectingWidget() {
     return Column(
@@ -242,18 +243,14 @@ class ConferenceRoomLayoutBuilder implements ParticipantLayoutBuilder {
                     Expanded(
                         child: remoteParticipant != null
                             ? remoteParticipant
-                                .widget /*ParticipantWidget.widgetFor(
-                                remoteParticipantTrack,
-                                showStatsLayer: false)*/
+                                .widget
                             : _connectingWidget()),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ControlBar(
                         screenShare: false,
+                        onDisconnect: onDisconnectCallback,
                       )
-                      /*ControlsWidget(
-                          widget.roomContext.room, widget.onDisconnectCallback)*/
-                      ,
                     )
                   ]),
             ),

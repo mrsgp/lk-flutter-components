@@ -20,14 +20,15 @@ import 'package:responsive_builder/responsive_builder.dart';
 import '../../../context/room_context.dart';
 
 class DisconnectButtonWidget extends StatelessWidget {
-  const DisconnectButtonWidget({
-    super.key,
-    required this.roomCtx,
-    required this.connected,
-    this.onPressed,
-    this.title = 'Leave',
-    this.showLabel = true,
-  });
+  final Function() onDisconnect;
+  const DisconnectButtonWidget(
+      {super.key,
+      required this.roomCtx,
+      required this.connected,
+      this.onPressed,
+      this.title = 'Leave',
+      this.showLabel = true,
+      required this.onDisconnect});
 
   final bool connected;
   final RoomContext roomCtx;
@@ -59,8 +60,10 @@ class DisconnectButtonWidget extends StatelessWidget {
               : const EdgeInsets.all(12),
         ),
       ),
-      onPressed: () =>
-          onPressed?.call() ?? connected ? roomCtx.disconnect() : null,
+      onPressed: () {
+        onPressed?.call() ?? connected ? roomCtx.disconnect() : null;
+        onDisconnect.call();
+      },
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
