@@ -5,8 +5,6 @@ import 'package:logging/logging.dart';
 import 'package:intl/intl.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
-import 'src/utils.dart';
-
 void main() {
   final format = DateFormat('HH:mm:ss');
   // configure logs for debugging
@@ -48,9 +46,6 @@ class MyHomePage extends StatelessWidget {
       print('Joining room: name=$name, roomName=$roomName');
     }
     try {
-      final details = await fetchConnectionDetails(name, roomName);
-      await roomCtx.connect(
-          url: details.serverUrl, token: details.participantToken);
       await roomCtx.connect(
         url: url,
         token: token,
@@ -65,7 +60,11 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LivekitRoom(
-      roomContext: RoomContext(),
+      roomContext: RoomContext(
+        url: url,
+        token: token,
+        enableAudioVisulizer: true,
+      ),
       builder: (context, roomCtx) {
         var deviceScreenType = getDeviceType(MediaQuery.of(context).size);
         return Scaffold(
@@ -85,7 +84,7 @@ class MyHomePage extends StatelessWidget {
                   ? Prejoin(
                       token: token,
                       url: url,
-                      //onJoinPressed: _onJoinPressed,
+                      onJoinPressed: _onJoinPressed,
                     )
                   :
 
@@ -116,8 +115,9 @@ class MyHomePage extends StatelessWidget {
                                   children: <Widget>[
                                     /// show participant loop
                                     ParticipantLoop(
-                                      showAudioTracks: false,
+                                      showAudioTracks: true,
                                       showVideoTracks: true,
+                                      showParticipantPlaceholder: true,
 
                                       /// layout builder
                                       layoutBuilder:
@@ -126,28 +126,32 @@ class MyHomePage extends StatelessWidget {
                                               : const GridLayoutBuilder(),
 
                                       /// participant builder
-                                      participantBuilder: (context) {
+                                      participantTrackBuilder:
+                                          (context, identifier) {
                                         // build participant widget for each Track
                                         return Padding(
                                           padding: const EdgeInsets.all(2.0),
                                           child: Stack(
                                             children: [
                                               /// video track widget in the background
-
-                                              IsSpeakingIndicator(
-                                                builder: (context, isSpeaking) {
-                                                  return isSpeaking != null
-                                                      ? IsSpeakingIndicatorWidget(
-                                                          isSpeaking:
-                                                              isSpeaking,
-                                                          child:
-                                                              const VideoTrackWidget(),
-                                                        )
-                                                      : const VideoTrackWidget();
-                                                },
-                                              ),
-
-                                              /// TODO: Add AudioTrackWidget or AgentVisualizerWidget later
+                                              identifier.isAudio &&
+                                                      roomCtx
+                                                          .enableAudioVisulizer
+                                                  ? const AudioVisualizerWidget()
+                                                  : IsSpeakingIndicator(
+                                                      builder: (context,
+                                                          isSpeaking) {
+                                                        return isSpeaking !=
+                                                                null
+                                                            ? IsSpeakingIndicatorWidget(
+                                                                isSpeaking:
+                                                                    isSpeaking,
+                                                                child:
+                                                                    const VideoTrackWidget(),
+                                                              )
+                                                            : const VideoTrackWidget();
+                                                      },
+                                                    ),
 
                                               /// focus toggle button at the top right
                                               const Positioned(
@@ -164,7 +168,12 @@ class MyHomePage extends StatelessWidget {
                                               ),
 
                                               /// status bar at the bottom
-                                              const ParticipantStatusBar(),
+                                              const Positioned(
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                                child: ParticipantStatusBar(),
+                                              ),
                                             ],
                                           ),
                                         );

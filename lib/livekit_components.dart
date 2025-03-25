@@ -65,6 +65,7 @@ export 'src/ui/widgets/room/disconnect_button.dart';
 export 'src/ui/widgets/room/screenshare_toggle.dart';
 export 'src/ui/widgets/room/clear_pin_button.dart';
 
+export 'src/ui/widgets/track/audio_visualizer_widget.dart';
 export 'src/ui/widgets/track/focus_toggle.dart';
 export 'src/ui/widgets/track/no_track_widget.dart';
 export 'src/ui/widgets/track/video_track_widget.dart';
@@ -75,6 +76,6 @@ export 'src/ui/widgets/camera_preview.dart';
 
 export 'src/ui/layout/layouts.dart';
 export 'src/ui/layout/grid_layout.dart';
-export 'src/ui/layout/garousel_ayout.dart';
+export 'src/ui/layout/carousel_layout.dart';
 
 export 'src/ui/prejoin/prejoin.dart';

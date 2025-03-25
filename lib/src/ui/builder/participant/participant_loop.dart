@@ -25,22 +25,27 @@ import '../../layout/layouts.dart';
 import '../../layout/sorting.dart';
 import 'participant_track.dart';
 
+typedef PaticipantTrackBuilder = Widget Function(
+    BuildContext context, TrackIdentifier identifier);
+
 class ParticipantLoop extends StatelessWidget {
   const ParticipantLoop({
     super.key,
-    required this.participantBuilder,
+    required this.participantTrackBuilder,
     this.layoutBuilder = const GridLayoutBuilder(),
     this.sorting = defaultSorting,
     this.showAudioTracks = false,
     this.showVideoTracks = true,
+    this.showParticipantPlaceholder = true,
   });
 
-  final WidgetBuilder participantBuilder;
+  final PaticipantTrackBuilder participantTrackBuilder;
   final List<TrackWidget> Function(List<TrackWidget> tracks)? sorting;
   final ParticipantLayoutBuilder layoutBuilder;
 
   final bool showAudioTracks;
   final bool showVideoTracks;
+  final bool showParticipantPlaceholder;
 
   List<MapEntry<TrackIdentifier, TrackPublication?>> buildTracksMap(
       bool audio, bool video, List<Participant> participants) {
@@ -93,24 +98,26 @@ class ParticipantLoop extends StatelessWidget {
               for (var item in trackMap) {
                 var identifier = item.key;
                 var track = item.value;
-                if (track == null) {
-                  trackWidgets.add(
-                    TrackWidget(
-                      identifier,
-                      ParticipantTrack(
-                        participant: identifier.participant,
-                        builder: (context) => participantBuilder(context),
-                      ),
-                    ),
-                  );
-                } else {
+                if (track != null) {
                   trackWidgets.add(
                     TrackWidget(
                       identifier,
                       ParticipantTrack(
                         participant: identifier.participant,
                         track: track,
-                        builder: (context) => participantBuilder(context),
+                        builder: (context) =>
+                            participantTrackBuilder(context, identifier),
+                      ),
+                    ),
+                  );
+                } else if (showParticipantPlaceholder) {
+                  trackWidgets.add(
+                    TrackWidget(
+                      identifier,
+                      ParticipantTrack(
+                        participant: identifier.participant,
+                        builder: (context) =>
+                            participantTrackBuilder(context, identifier),
                       ),
                     ),
                   );

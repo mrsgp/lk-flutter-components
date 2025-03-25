@@ -44,6 +44,20 @@ class TrackReferenceContext extends ChangeNotifier {
           notifyListeners();
         }
       })
+      ..on<LocalTrackPublishedEvent>((event) {
+        if (event.publication.sid == pub?.sid) {
+          Debug.event(
+              'TrackContext: LocalTrackPublishedEvent for ${_participant.sid}');
+          notifyListeners();
+        }
+      })
+      ..on<TrackSubscribedEvent>((event) {
+        if (event.publication.sid == pub?.sid) {
+          Debug.event(
+              'TrackContext: TrackSubscribedEvent for ${_participant.sid}');
+          notifyListeners();
+        }
+      })
       ..on<TrackStreamStateUpdatedEvent>((event) {
         if (event.publication.sid == pub?.sid) {
           Debug.event(
@@ -56,6 +70,7 @@ class TrackReferenceContext extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
+    _listener.cancelAll();
     _listener.dispose();
     if (_statsListener != null) {
       _statsListener!.dispose();

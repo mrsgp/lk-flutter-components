@@ -103,7 +103,7 @@ class LiveKitTheme {
             color: LKColors.lkBlue,
           ),
           hintStyle: TextStyle(
-            color: LKColors.lkBlue.withOpacity(.5),
+            color: LKColors.lkBlue.withOpacity(0.5),
           ),
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,

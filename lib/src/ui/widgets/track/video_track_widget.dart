@@ -34,7 +34,7 @@ class VideoTrackWidget extends StatelessWidget {
 
     Debug.log('===>     VideoTrackWidget for $sid');
 
-    if (trackCtx == null) {
+    if (trackCtx == null || trackCtx.videoTrack == null) {
       return const NoTrackWidget();
     }
 

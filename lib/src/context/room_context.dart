@@ -49,6 +49,7 @@ class RoomContext extends ChangeNotifier with ChatContextMixin {
     bool connect = false,
     RoomOptions roomOptions = const RoomOptions(),
     ConnectOptions? connectOptions,
+    this.enableAudioVisulizer = false,
     this.onConnected,
     this.onDisconnected,
     this.onError,
@@ -115,11 +116,13 @@ class RoomContext extends ChangeNotifier with ChatContextMixin {
         notifyListeners();
       })
       ..on<TrackPublishedEvent>((event) {
-        Debug.event('ParticipantContext: TrackPublishedEvent $roomName');
+        Debug.event(
+            'RoomContext: TrackPublishedEvent $roomName participant = ${event.participant.identity} track = ${event.publication.sid}');
         _buildParticipants();
       })
       ..on<TrackUnpublishedEvent>((event) {
-        Debug.event('ParticipantContext: TrackUnpublishedEvent $roomName');
+        Debug.event(
+            'RoomContext: TrackUnpublishedEvent $roomName participant = ${event.participant.identity} track = ${event.publication.sid}');
         _buildParticipants();
       })
       ..on<LocalTrackPublishedEvent>((event) {
@@ -130,6 +133,16 @@ class RoomContext extends ChangeNotifier with ChatContextMixin {
       ..on<LocalTrackUnpublishedEvent>((event) {
         Debug.event(
             'RoomContext: LocalTrackUnpublishedEvent track = ${event.publication.sid}');
+        _buildParticipants();
+      })
+      ..on<TrackMutedEvent>((event) {
+        Debug.event(
+            'RoomContext: TrackMutedEvent $roomName participant = ${event.participant.identity} track = ${event.publication.sid}');
+        _buildParticipants();
+      })
+      ..on<TrackUnmutedEvent>((event) {
+        Debug.event(
+            'RoomContext: TrackUnmutedEvent $roomName participant = ${event.participant.identity} track = ${event.publication.sid}');
         _buildParticipants();
       });
 
@@ -197,6 +210,12 @@ class RoomContext extends ChangeNotifier with ChatContextMixin {
 
   /// Get the [Room] instance.
   Room get room => _room;
+
+  /// enable audio visualizer, default is false
+  /// if true, the audio visualizer will be enabled in the room.
+  /// you can use the [AudioVisualizerWidget] widget to show the
+  /// audio visualizer.
+  final bool enableAudioVisulizer;
 
   String? _roomName;
 
