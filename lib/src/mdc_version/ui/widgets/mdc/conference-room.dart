@@ -9,18 +9,20 @@ import 'package:responsive_builder/responsive_builder.dart';
 class ConferenceRoom extends StatefulWidget {
   final bool isChatView;
   final String remoteParticipantName;
-  final Function() onDisconnectCallback;
+  final void Function() onDisconnectCallback;
+  final void Function()? onNameTapCallback;
   final Future<bool> Function(String, bool) onMessageSendCallback;
   final Future<bool> Function(String) onFileDownload;
   final Future<String> Function(XFile) onFileUpload;
   const ConferenceRoom(
-      this.isChatView,
-      this.remoteParticipantName,
-      this.onDisconnectCallback,
-      this.onMessageSendCallback,
-      this.onFileUpload,
-      this.onFileDownload,
-      {super.key});
+      {required this.isChatView,
+      required this.remoteParticipantName,
+      required this.onDisconnectCallback,
+      required this.onMessageSendCallback,
+      required this.onFileUpload,
+      required this.onFileDownload,
+      this.onNameTapCallback,
+      super.key});
 
   @override
   State<ConferenceRoom> createState() => _ConferenceRoomState();
@@ -30,7 +32,6 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
   @override
   void initState() {
     super.initState();
-   
   }
 
   @override
@@ -81,8 +82,8 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
       showVideoTracks: true,
 
       /// layout builder
-      layoutBuilder:
-          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName, widget.onDisconnectCallback),
+      layoutBuilder: ConferenceRoomLayoutBuilder(
+          roomCtx, remoteParticipantName, widget.onDisconnectCallback),
 
       /// participant builder
       participantBuilder: (context) {
@@ -113,7 +114,7 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
                   const VideoTrackWidget(),
                   Align(
                     alignment: Alignment.topRight,
-                    child: ParticipantStatusBar(),
+                    child: ParticipantStatusBar(onNameTap: widget.onNameTapCallback,),
                   )
                 ],
               );
@@ -131,8 +132,8 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
       showVideoTracks: true,
 
       /// layout builder
-      layoutBuilder:
-          ConferenceRoomLayoutBuilder(roomCtx, remoteParticipantName, widget.onDisconnectCallback),
+      layoutBuilder: ConferenceRoomLayoutBuilder(
+          roomCtx, remoteParticipantName, widget.onDisconnectCallback),
 
       /// participant builder
       participantBuilder: (context) {
@@ -169,7 +170,7 @@ class _ConferenceRoomState extends State<ConferenceRoom> {
               ),
 
               /// status bar at the bottom
-              const ParticipantStatusBar(),
+              ParticipantStatusBar(onNameTap: widget.onNameTapCallback,),
             ],
           ),
         );
@@ -185,7 +186,8 @@ class ConferenceRoomLayoutBuilder implements ParticipantLayoutBuilder {
   final RoomContext roomContext;
   final String remoteParticipantName;
   final Function() onDisconnectCallback;
-  ConferenceRoomLayoutBuilder(this.roomContext, this.remoteParticipantName, this.onDisconnectCallback);
+  ConferenceRoomLayoutBuilder(
+      this.roomContext, this.remoteParticipantName, this.onDisconnectCallback);
 
   Widget _connectingWidget() {
     return Column(
@@ -242,16 +244,14 @@ class ConferenceRoomLayoutBuilder implements ParticipantLayoutBuilder {
                   children: [
                     Expanded(
                         child: remoteParticipant != null
-                            ? remoteParticipant
-                                .widget
+                            ? remoteParticipant.widget
                             : _connectingWidget()),
                     Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ControlBar(
-                        screenShare: false,
-                        onDisconnect: onDisconnectCallback,
-                      )
-                    )
+                        padding: const EdgeInsets.all(8.0),
+                        child: ControlBar(
+                          screenShare: false,
+                          onDisconnect: onDisconnectCallback,
+                        ))
                   ]),
             ),
             StatefulBuilder(

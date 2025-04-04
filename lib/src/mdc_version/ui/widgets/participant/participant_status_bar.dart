@@ -26,12 +26,14 @@ import '../../builder/track/e2e_encryption_indicator.dart';
 import 'connection_quality_indicator.dart';
 
 class ParticipantStatusBar extends StatelessWidget {
+  final void Function()? onNameTap;
   const ParticipantStatusBar({
     super.key,
     this.showName = true,
     this.showE2EEStatus = true,
     this.showConnectionQuality = true,
     this.showMuteStatus = true,
+    this.onNameTap,
   });
 
   final bool showName;
@@ -74,6 +76,10 @@ class ParticipantStatusBar extends StatelessWidget {
                   ParticipantName(
                     builder: (context, name) => name != null
                         ? Flexible(
+                            child: InkWell(
+                            onTap: () {
+                              onNameTap?.call();
+                            },
                             child: Text(
                               isScreenShare ? '$name\'s screen' : name,
                               style: const TextStyle(
@@ -82,7 +88,7 @@ class ParticipantStatusBar extends StatelessWidget {
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
-                          )
+                          ))
                         : Container(),
                   ),
                 if (showConnectionQuality)
